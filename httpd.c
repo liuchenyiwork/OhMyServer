@@ -1,17 +1,3 @@
-/* J. David's webserver */
-/* This is a simple webserver.
- * Created November 1999 by J. David Blackstone.
- * CSE 4344 (Network concepts), Prof. Zeigler
- * University of Texas at Arlington
- */
-/* This program compiles for Sparc Solaris 2.6.
- * To compile for Linux:
- *  1) Comment out the #include <pthread.h> line.
- *  2) Comment out the line that defines the variable newthread.
- *  3) Comment out the two lines that run pthread_create().
- *  4) Uncomment the line that runs accept_request().
- *  5) Remove -lsocket from the Makefile.
- */
 #include <stdio.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -44,9 +30,7 @@ int startup(u_short *);
 void unimplemented(int);
 
 /**********************************************************************/
-/* A request has caused a call to accept() on the server port to
- * return.  Process the request appropriately.
- * Parameters: the socket connected to the client 
+/* 
  * 处理从套接字上监听到到一个HTTP请求，在这里可以很大一部分地体现服务器处理请求流程
  * */
 /**********************************************************************/
@@ -160,8 +144,7 @@ void *accept_request(void *from_client)
 }
 
 /**********************************************************************/
-/* Inform the client that a request it has made has a problem.
- * Parameters: client socket 
+/*  
  * 返回给客户端这是个错误请求，HTTP状态码 400 BAD REQUEST.
  * */
 /**********************************************************************/
@@ -182,14 +165,10 @@ void bad_request(int client)
 }
 
 /**********************************************************************/
-/* Put the entire contents of a file out on a socket.  This function
- * is named after the UNIX "cat" command, because it might have been
- * easier just to do something like pipe, fork, and exec("cat").
- * Parameters: the client socket descriptor
- *             FILE pointer for the file to cat 
+/* 
  * 读取服务器上某个文件写到socket套接字
  * */
-/**********************************************************************/
+
 void cat(int client, FILE *resource)
 {
 	//发送文件的内容
@@ -203,12 +182,11 @@ void cat(int client, FILE *resource)
 	}
 }
 
-/**********************************************************************/
-/* Inform the client that a CGI script could not be executed.
- * Parameter: the client socket descriptor. 
+
+/* 
  * 主要处理发生在执行cgi程序时出现的错误
  * */
-/**********************************************************************/
+
 void cannot_execute(int client)
 {
 	char buf[1024];
@@ -223,27 +201,22 @@ void cannot_execute(int client)
 	send(client, buf, strlen(buf), 0);
 }
 
-/**********************************************************************/
-/* Print out an error message with perror() (for system errors; based
- * on value of errno, which indicates system call errors) and exit the
- * program indicating an error. 
+
+/* 
  * 把错误信息写到perror并退出
  * */
-/**********************************************************************/
+
 void error_die(const char *sc)
 {
 	perror(sc);
 	exit(1);
 }
 
-/**********************************************************************/
-/* Execute a CGI script.  Will need to set environment variables as
- * appropriate.
- * Parameters: client socket descriptor
- *             path to the CGI script 
+
+/* 
  * 运行cgi程序的处理，也是个主要函数
  * */
-/**********************************************************************/
+
 //执行cgi动态解析
 void execute_cgi(int client, const char *path,
 				 const char *method, const char *query_string)
@@ -370,21 +343,11 @@ void execute_cgi(int client, const char *path,
 	}
 }
 
-/**********************************************************************/
-/* Get a line from a socket, whether the line ends in a newline,
- * carriage return, or a CRLF combination.  Terminates the string read
- * with a null character.  If no newline indicator is found before the
- * end of the buffer, the string is terminated with a null.  If any of
- * the above three line terminators is read, the last character of the
- * string will be a linefeed and the string will be terminated with a
- * null character.
- * Parameters: the socket descriptor
- *             the buffer to save the data in
- *             the size of the buffer
- * Returns: the number of bytes stored (excluding null) 
+
+/* 
  * 读取套接字的一行，把回撤换行等情况都统一为换行符结束
  * */
-/**********************************************************************/
+
 //解析一行http报文
 int get_line(int sock, char *buf, int size)
 {
@@ -417,13 +380,11 @@ int get_line(int sock, char *buf, int size)
 	return (i);
 }
 
-/**********************************************************************/
-/* Return the informational HTTP headers about a file. */
-/* Parameters: the socket to print the headers on
- *             the name of the file 
+
+/* 
  * 把HTTP响应都头部写到套接字
  * */
-/**********************************************************************/
+
 void headers(int client, const char *filename)
 {
 
@@ -441,11 +402,11 @@ void headers(int client, const char *filename)
 	send(client, buf, strlen(buf), 0);
 }
 
-/**********************************************************************/
-/* Give a client a 404 not found status message. 
+
+/* 
  * 主要处理找不到请求到文件时的情况
 */
-/**********************************************************************/
+
 void not_found(int client)
 {
 	char buf[1024];
@@ -469,15 +430,11 @@ void not_found(int client)
 	sprintf(buf, "</BODY></HTML>\r\n");
 	send(client, buf, strlen(buf), 0);
 }
-/**********************************************************************/
-/* Send a regular file to the client.  Use headers, and report
- * errors to client if they occur.
- * Parameters: a pointer to a file structure produced from the socket
- *              file descriptor
- *             the name of the file to serve 
+
+/* 
  * 调用cat把服务器文件返回给浏览器
- * */
-/**********************************************************************/
+ */
+
 
 //如果不是CGI文件，也就是静态文件，直接读取文件返回给请求的http客户端
 void serve_file(int client, const char *filename)
@@ -503,16 +460,11 @@ void serve_file(int client, const char *filename)
 	}
 	fclose(resource); //关闭文件句柄
 }
-/**********************************************************************/
-/* This function starts the process of listening for web connections
- * on a specified port.  If the port is 0, then dynamically allocate a
- * port and modify the original port variable to reflect the actual
- * port.
- * Parameters: pointer to variable containing the port to connect on
- * Returns: the socket 
+
+/* 
  * 初始化httpd服务，包括建立套接字，绑定端口，进行监听
  * */
-/**********************************************************************/
+
 //启动服务端
 int startup(u_short *port)
 {
@@ -571,7 +523,7 @@ void unimplemented(int client)
 	send(client, buf, strlen(buf), 0);
 }
 
-/**********************************************************************/
+
 
 int main(void)
 {
