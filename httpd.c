@@ -16,18 +16,18 @@
 
 #define SERVER_STRING "Server: Chenyi's http/0.1.0\r\n" //定义个人server名称
 
-void *accept_request(void *client);
-void bad_request(int);
-void cat(int, FILE *);
-void cannot_execute(int);
-void error_die(const char *);
-void execute_cgi(int, const char *, const char *, const char *);
-int get_line(int, char *, int);
-void headers(int, const char *);
-void not_found(int);
-void serve_file(int, const char *);
-int startup(u_short *);
-void unimplemented(int);
+void *accept_request(void *client);//接收请求
+void bad_request(int);//未分配
+void cat(int, FILE *);//读取服务器上某个文件写到socket
+void cannot_execute(int);//处理执行cgi程序时出现的错误
+void error_die(const char *);//输出错误信息到perror并退出
+void execute_cgi(int, const char *, const char *, const char *);//执行cgi程序
+int get_line(int, char *, int);//解析HTML的一行
+void headers(int, const char *);//把HTTP响应都头部写到套接字
+void not_found(int);//404 no found
+void serve_file(int, const char *);//如果是静态文件则直接读取并返回
+int startup(u_short *);//开始监听
+void unimplemented(int);//发消息说对应方法没有实现
 
 /**********************************************************************/
 /* 
