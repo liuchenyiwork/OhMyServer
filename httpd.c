@@ -35,8 +35,9 @@ void unimplemented(int);//发消息说对应方法没有实现
  * */
 /**********************************************************************/
 //  处理监听到的 HTTP 请求 
-void *accept_request(void *from_client)
+void *accept_request(void* from_client)
 {
+	printf("Now in accept_request\n");
 	int client = *(int *)from_client;
 	char buf[1024];
 	int numchars;
@@ -47,11 +48,12 @@ void *accept_request(void *from_client)
 	struct stat st;
 	int cgi = 0;
 	char *query_string = NULL;
-
+printf("stock in 0\n");
 	numchars = get_line(client, buf, sizeof(buf));
 
 	i = 0;
 	j = 0;
+printf("stock in 1\n");
 	while (!ISspace(buf[j]) && (i < sizeof(method) - 1))
 	{
 		//提取其中的请求方式
@@ -71,9 +73,10 @@ void *accept_request(void *from_client)
 		cgi = 1;
 
 	i = 0;
+printf("stock in 2\n");
 	while (ISspace(buf[j]) && (j < sizeof(buf)))
 		j++;
-
+printf("stock in 3\n");
 	while (!ISspace(buf[j]) && (i < sizeof(url) - 1) && (j < sizeof(buf)))
 	{
 		url[i] = buf[j];
@@ -221,7 +224,7 @@ void error_die(const char *sc)
 void execute_cgi(int client, const char *path,
 				 const char *method, const char *query_string)
 {
-
+	printf("Now in execute_cgi\n");
 	char buf[1024];
 	int cgi_output[2];
 	int cgi_input[2];
