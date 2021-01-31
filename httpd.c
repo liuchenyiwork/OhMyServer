@@ -34,7 +34,7 @@ void unimplemented(int);//发消息说对应方法没有实现
  * 处理从套接字上监听到到一个HTTP请求，在这里可以很大一部分地体现服务器处理请求流程
  * */
 /**********************************************************************/
-//  处理监听到的 HTTP 请求
+//  处理监听到的 HTTP 请求 
 void *accept_request(void *from_client)
 {
 	int client = *(int *)from_client;
@@ -106,14 +106,14 @@ void *accept_request(void *from_client)
 		strcat(path, "test.html");
 	}
 
-	if (stat(path, &st) == -1)
+	if (stat(path, &st) == -1)//没有找到对应文件
 	{
-		while ((numchars > 0) && strcmp("\n", buf))
+		while ((numchars > 0) && strcmp("\n", buf))//把client中的剩余缓冲读完，什么都不做
 			numchars = get_line(client, buf, sizeof(buf));
 
 		not_found(client);
 	}
-	else
+	else//找到了对应文件
 	{
 
 		if ((st.st_mode & S_IFMT) == S_IFDIR) //S_IFDIR代表目录
@@ -122,7 +122,7 @@ void *accept_request(void *from_client)
 			strcat(path, "/test.html");
 		}
 
-		//文件可执行
+		//是一个可执行文件
 		if ((st.st_mode & S_IXUSR) ||
 			(st.st_mode & S_IXGRP) ||
 			(st.st_mode & S_IXOTH))
@@ -131,10 +131,9 @@ void *accept_request(void *from_client)
 			//S_IXOTH:其他用户具可读取权限
 			cgi = 1;
 
-		if (!cgi)
-
+		if (!cgi)//不是CGI程序，简单第发送文件
 			serve_file(client, path);
-		else
+		else//是CGI程序，执行CGI程序
 			execute_cgi(client, path, method, query_string);
 	}
 
@@ -167,6 +166,7 @@ void bad_request(int client)
 /**********************************************************************/
 /* 
  * 读取服务器上某个文件写到socket套接字
+ * 
  * */
 
 void cat(int client, FILE *resource)
@@ -479,7 +479,7 @@ int startup(u_short *port)
 	socklen_t optlen;
 	optlen = sizeof(option);
 	option = 1;
-	setsockopt(httpd, SOL_SOCKET, SO_REUSEADDR, (void *)&option, optlen); //设置选项
+	setsockopt(httpd, SOL_SOCKET, SO_REUSEADDR, (void *)&option, optlen); //设置可以使用TIMEWAIT中的连接
 
 	memset(&name, 0, sizeof(name));
 	name.sin_family = AF_INET;
