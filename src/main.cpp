@@ -23,20 +23,22 @@
 
 #define SERVER_STRING "Server: Chenyi's http/0.1.0\r\n" //定义个人server名称
 
-
 using namespace std;
 
-int main(int argc,char* argv[])
+int main(int argc, char *argv[])
 {
-   u_short port=0;
-   if(argc<=1){//无参数，端口号使用默认的4396
-      cout<<"using default port : 4396..."<<endl;
-      port = 4396;      
-   }else{
-      port = atoi(argv[1]); //获取监听的端口号
-   }
-   
-   int server_sock = -1;
+	u_short port = 0;
+	if (argc <= 1)
+	{ //无参数，端口号使用默认的4396
+		cout << "using default port : 4396..." << endl;
+		port = 4396;
+	}
+	else
+	{
+		port = atoi(argv[1]); //获取监听的端口号
+	}
+
+	int server_sock = -1;
 	int client_sock = -1;
 	struct sockaddr_in client_name;
 	socklen_t client_name_len = sizeof(client_name);
@@ -64,5 +66,5 @@ int main(int argc,char* argv[])
 
 	return (0);
 
-   return 0;
+	return 0;
 }

@@ -397,7 +397,7 @@ void headers(int client, const char *filename)
 					//发送HTTP头
 	strcpy(buf, "HTTP/1.0 200 OK\r\n");
 	send(client, buf, strlen(buf), 0);
-	strcpy(buf, SERVER_STRING);
+	strcpy(buf, SERVER_STRING);//SERVER_STRING定义在开头
 	send(client, buf, strlen(buf), 0);
 	sprintf(buf, "Content-Type: text/html\r\n");
 	send(client, buf, strlen(buf), 0);
@@ -416,7 +416,7 @@ void not_found(int client)
 	//返回404
 	sprintf(buf, "HTTP/1.0 404 NOT FOUND\r\n");
 	send(client, buf, strlen(buf), 0);
-	sprintf(buf, SERVER_STRING);
+	sprintf(buf, SERVER_STRING);//SERVER_STRING定义在开头
 	send(client, buf, strlen(buf), 0);
 	sprintf(buf, "Content-Type: text/html\r\n");
 	send(client, buf, strlen(buf), 0);
