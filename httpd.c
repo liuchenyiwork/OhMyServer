@@ -48,12 +48,12 @@ void *accept_request(void* from_client)
 	struct stat st;
 	int cgi = 0;
 	char *query_string = NULL;
-printf("stock in 0\n");
+
 	numchars = get_line(client, buf, sizeof(buf));
 
 	i = 0;
 	j = 0;
-printf("stock in 1\n");
+
 	while (!ISspace(buf[j]) && (i < sizeof(method) - 1))
 	{
 		//提取其中的请求方式
@@ -73,10 +73,10 @@ printf("stock in 1\n");
 		cgi = 1;
 
 	i = 0;
-printf("stock in 2\n");
+
 	while (ISspace(buf[j]) && (j < sizeof(buf)))
 		j++;
-printf("stock in 3\n");
+
 	while (!ISspace(buf[j]) && (i < sizeof(url) - 1) && (j < sizeof(buf)))
 	{
 		url[i] = buf[j];
@@ -113,7 +113,6 @@ printf("stock in 3\n");
 	{
 		while ((numchars > 0) && strcmp("\n", buf))//把client中的剩余缓冲读完，什么都不做
 			numchars = get_line(client, buf, sizeof(buf));
-
 		not_found(client);
 	}
 	else//找到了对应文件
@@ -460,6 +459,8 @@ void serve_file(int client, const char *filename)
 	{
 		headers(client, filename);
 		cat(client, resource);
+		printf("serve file here\n");
+		printf("finename is :%s\n",filename);
 	}
 	fclose(resource); //关闭文件句柄
 }
@@ -547,8 +548,9 @@ int main(void)
 		client_sock = accept(server_sock,
 							 (struct sockaddr *)&client_name,
 							 &client_name_len); //阻塞地使用accept接收一个连接
-
-		printf("New connection....  ip: %s , port: %d\n", inet_ntoa(client_name.sin_addr), ntohs(client_name.sin_port));
+		
+		printf("--------------");
+		printf("New connection....  ip: %s , port: %d-------------------\n", inet_ntoa(client_name.sin_addr), ntohs(client_name.sin_port));
 		if (client_sock == -1)
 			error_die("accept");
 		//accept_request(&client_sock);
