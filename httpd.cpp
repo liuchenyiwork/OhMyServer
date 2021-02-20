@@ -38,6 +38,7 @@ int startup(u_short *);//开始监听
 void unimplemented(int);//发消息说对应方法没有实现
 void epollrun(epoll_event* , int , int , int );//epoll捕获到io后执行的操作
 
+int line=0;//记录读取的信息的行下标
 /**********************************************************************/
 /* 
  * 处理从套接字上监听到到一个HTTP请求，在这里可以很大一部分地体现服务器处理请求流程
@@ -148,7 +149,7 @@ void *accept_request(void* from_client)
 		else//是CGI程序，执行CGI程序
 			execute_cgi(client, path, method, query_string);
 	}
-
+	line=0;
 	close(client);
 	//printf("connection close....client: %d \n",client);
 	return NULL;
@@ -366,14 +367,14 @@ int get_line(int sock, char *buf, int size)
 	int i = 0;
 	char c = '\0';
 	int n;
-
+	cout<<""<<++line<<":";
 	while ((i < size - 1) && (c != '\n'))
 	{
 		n = recv(sock, &c, 1, 0);
 
 		if (n > 0)
 		{
-			if (c == '\r')
+			if (c == '\r')//处理/r/n的情况
 			{
 
 				n = recv(sock, &c, 1, MSG_PEEK);
@@ -383,12 +384,14 @@ int get_line(int sock, char *buf, int size)
 					c = '\n';
 			}
 			buf[i] = c;
+			cout<<c;
 			i++;
 		}
 		else
 			c = '\n';
 	}
 	buf[i] = '\0';
+
 	return (i);
 }
 
@@ -565,31 +568,34 @@ void unimplemented(int client)
 }
 
 void epollrun(epoll_event* events, int number, int epollfd, int server_sock){
-
+	int client_sock = -1;
+	struct sockaddr_in client_name;
+	socklen_t client_name_len = sizeof(client_name);
+	pthread_t newthread;
+	
 	//epoll code here
 	for(int i=0;i<number;i++){//遍历每一个事件
 		int sockfd=events[i].data.fd;
-		if(sockfd==server_sock){//是监听事件
-			cout<<"server_sock is "<<server_sock<<endl;
-			int client_sock = -1;
-			struct sockaddr_in client_name;
-			socklen_t client_name_len = sizeof(client_name);
-			pthread_t newthread;
+		if(sockfd==server_sock){//是监听事件,
+			//cout<<"server_sock is "<<server_sock<<endl;
+			
+			//是请求连接
 			client_sock = accept(server_sock,
 							 (struct sockaddr *)&client_name,
 							 &client_name_len); //阻塞地使用accept接收一个连接
-		
 
-			//printf("accept new connection....  ip: %s , port: %d-------------------\n", inet_ntoa(client_name.sin_addr), ntohs(client_name.sin_port));
-			cout<<"accept new connection... ip:"<<inet_ntoa(client_name.sin_addr)<<", port: "<<ntohs(client_name.sin_port)<<endl;
 			if (client_sock == -1)
 				error_die("accept");
 			//accept_request(&client_sock);
 			//创建一个子线程来处理连接，处理连接使用的是accept_request函数。(newthread是新线程的标识符)
-			if (pthread_create(&newthread, NULL, accept_request, (void *)&client_sock) != 0)
+			
+			addfd(epollfd,client_sock,false);//false代表lt模式
+		}
+		else if(events[i].events & EPOLLIN){//读事件
+			if (pthread_create(&newthread, NULL, accept_request, (void *)&sockfd) != 0)
 				perror("pthread_create");
-
-			addfd(epollfd,server_sock,false);//false代表lt模式
+		}else{
+			cout<<"something else happend"<<endl;
 		}
 	}
 }
@@ -597,33 +603,52 @@ void epollrun(epoll_event* events, int number, int epollfd, int server_sock){
 
 int main(void)
 {
-	int server_sock = -1;
+	int listenfd = -1;
 	u_short port = 4396; //默认监听端口号 port 为4396
 
-	server_sock = startup(&port);//server_sock等同于listenfd
-	printf("http server_sock is %d\n", server_sock);
+	int connfd = -1;
+	struct sockaddr_in client_name;
+	socklen_t client_name_len = sizeof(client_name);
+	pthread_t newthread;
+
+	listenfd = startup(&port);//server_sock等同于listenfd
+	printf("http server_sock is %d\n", listenfd);
 	printf("http running on port %d\n", port);
 
 	//code of epoll
 	epoll_event events[MAX_EVENT_NUMBER];//创建epoll并指定epoll事件表大小
 	int epollfd=epoll_create(5);//
 	assert( epollfd != -1 );
-	addfd( epollfd, server_sock, false );//把listenfd注册以ET(true)方式注册到内核事件表epollfd中
+	addfd( epollfd, listenfd, false );//把listenfd注册以ET(true)方式注册到内核事件表epollfd中
 
 	while (1)
 	{
-		//code if epoll
+		//code for epoll
 		cout<<"----------------"<<endl;
 		cout<<"epoll_wait is ready..."<<endl;
 		cout<<"----------------"<<endl;
+
 		int ret=epoll_wait(epollfd,events,MAX_EVENT_NUMBER,-1);
+
 		if(ret<0){
-			printf("epoll failure\n");
+			cout<<"epoll failure"<<endl;
 			break;
 		}
-		cout<<"epoll ok, events numbers:"<<ret<<endl;
-		epollrun(events,ret,epollfd,server_sock);//使用epoll处理监听到的事件 
+		
+		//epollrun(events,ret,epollfd,server_sock);//使用epoll处理监听到的事件 
+
+		//epoll code here
+		for(int i=0;i<ret;i++){
+			int sockfd=events[i].data.fd;
+			if(sockfd==listenfd){//是http监听事件
+				connfd=accept(listenfd,(struct sockaddr *)&client_name,&client_name_len);
+				if(connfd == -1)
+					error_die("accept");
+				if (pthread_create(&newthread, NULL, accept_request, (void *)&connfd) != 0)
+					perror("pthread_create");
+			}
+		}
 	}
-	close(server_sock);
+	close(listenfd);
 	return (0);
 }
