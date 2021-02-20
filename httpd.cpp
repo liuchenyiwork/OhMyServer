@@ -621,7 +621,7 @@ int main(void)
 			printf("epoll failure\n");
 			break;
 		}
-		cout<<"epoll ret numbers:"<<ret<<endl;
+		cout<<"epoll ok, events numbers:"<<ret<<endl;
 		epollrun(events,ret,epollfd,server_sock);//使用epoll处理监听到的事件 
 	}
 	close(server_sock);
