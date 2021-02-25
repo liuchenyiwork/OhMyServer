@@ -27,6 +27,7 @@ int main(void) {
 	socklen_t client_name_len = sizeof(client_name);
 	pthread_t newthread;
 
+	//开启监听服务器，并且返回对应的文件描述符
 	listenfd = startup(&port);//server_sock等同于listenfd
 	printf("http server_sock is %d\n", listenfd);
 	printf("http running on port %d\n", port);
@@ -37,7 +38,7 @@ int main(void) {
 	assert(epollfd != -1);
 	addfd(epollfd, listenfd, false);//把listenfd注册以ET(true)方式注册到内核事件表epollfd中
 
-	while (1) 	{
+	while (1) {
 		//code for epoll
 		cout << "----------------" << endl;
 		cout << "epoll_wait is ready..." << endl;
@@ -49,10 +50,10 @@ int main(void) {
 			break;
 		}
 
-		//epoll code here
+		//epoll choose
 		for (int i = 0;i < ret;i++) {
-			int sockfd = events[i].data.fd;
-			if (sockfd == listenfd) {//是tcp监听事件
+			int eventfd = events[i].data.fd;
+			if (eventfd == listenfd) {//是tcp监听事件
 				connfd = accept(listenfd, (struct sockaddr*)&client_name, &client_name_len);
 				if (connfd == -1)
 					error_die("accept");
