@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <sys/socket.h>
 #include <string.h>
-#include "get_line.h"
-#include "serve_file.h"
-#include "ans.h"
+#include "../include/get_line.h"
+#include "../include/serve_file.h"
+#include "../include/ans.h"
 
 
 /**********************************************************************/

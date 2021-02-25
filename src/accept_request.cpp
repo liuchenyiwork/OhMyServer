@@ -4,11 +4,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <ctype.h>
-#include "accept_request.h"
-#include "get_line.h"
-#include "ans.h"
-#include "serve_file.h"
-#include "excute_cgi.h"
+#include "../include/accept_request.h"
+#include "../include/get_line.h"
+#include "../include/ans.h"
+#include "../include/serve_file.h"
+#include "../include/excute_cgi.h"
 
 
 #define ISspace(x) isspace((int)(x))

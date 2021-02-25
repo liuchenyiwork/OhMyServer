@@ -8,10 +8,11 @@
 #include <pthread.h>
 #include <sys/epoll.h>
 #include <assert.h>
-#include "accept_request.h"
-#include "error_die.h"
-#include "startup.h"
-#include "epoll_helper.h"
+#include "include/accept_request.h"
+#include "include/error_die.h"
+#include "include/startup.h"
+#include "include/epoll_helper.h"
+
 using namespace std;
 
 #define MAX_EVENT_NUMBER 1024

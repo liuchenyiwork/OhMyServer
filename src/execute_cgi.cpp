@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include "excute_cgi.h"
-#include "ans.h"
-#include "get_line.h"
+#include "../include/excute_cgi.h"
+#include "../include/ans.h"
+#include "../include/get_line.h"
 
 
 /*

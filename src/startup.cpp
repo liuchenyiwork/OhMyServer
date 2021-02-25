@@ -3,8 +3,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <string.h>
-#include "startup.h"
-#include "error_die.h"
+#include "../include/startup.h"
+#include "../include/error_die.h"
 
 /*
  * 初始化httpd服务，包括建立套接字，绑定端口，进行监听
