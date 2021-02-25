@@ -9,14 +9,13 @@
 #include "get_line.h"
 
 
-/* 
+/*
  * 运行cgi程序的处理，也是个主要函数
  * */
 
-//执行cgi动态解析
-void execute_cgi(int client, const char *path,
-				 const char *method, const char *query_string)
-{
+ //执行cgi动态解析
+void execute_cgi(int client, const char* path,
+	const char* method, const char* query_string) {
 	printf("Now in execute_cgi\n");
 	char buf[1024];
 	int cgi_output[2];
@@ -33,19 +32,15 @@ void execute_cgi(int client, const char *path,
 	//默认字符
 	buf[0] = 'A';
 	buf[1] = '\0';
-	if (strcasecmp(method, "GET") == 0)
-	{
-		while ((numchars > 0) && strcmp("\n", buf))
-		{
+	if (strcasecmp(method, "GET") == 0) {
+		while ((numchars > 0) && strcmp("\n", buf)) {
 			numchars = get_line(client, buf, sizeof(buf));
 		}
 	}
-	else
-	{
+	else {
 
 		numchars = get_line(client, buf, sizeof(buf));
-		while ((numchars > 0) && strcmp("\n", buf))
-		{
+		while ((numchars > 0) && strcmp("\n", buf)) {
 			buf[15] = '\0';
 			if (strcasecmp(buf, "Content-Length:") == 0)
 				content_length = atoi(&(buf[16]));
@@ -53,8 +48,7 @@ void execute_cgi(int client, const char *path,
 			numchars = get_line(client, buf, sizeof(buf));
 		}
 
-		if (content_length == -1)
-		{
+		if (content_length == -1) {
 			bad_request(client);
 			return;
 		}
@@ -62,19 +56,16 @@ void execute_cgi(int client, const char *path,
 
 	sprintf(buf, "HTTP/1.0 200 OK\r\n");
 	send(client, buf, strlen(buf), 0);
-	if (pipe(cgi_output) < 0)
-	{
+	if (pipe(cgi_output) < 0) {
 		cannot_execute(client);
 		return;
 	}
-	if (pipe(cgi_input) < 0)
-	{
+	if (pipe(cgi_input) < 0) {
 		cannot_execute(client);
 		return;
 	}
 
-	if ((pid = fork()) < 0)
-	{
+	if ((pid = fork()) < 0) {
 		cannot_execute(client);
 		return;
 	}
@@ -93,14 +84,12 @@ void execute_cgi(int client, const char *path,
 		sprintf(meth_env, "REQUEST_METHOD=%s", method);
 		putenv(meth_env);
 
-		if (strcasecmp(method, "GET") == 0)
-		{
+		if (strcasecmp(method, "GET") == 0) {
 			//存储QUERY_STRING
 			sprintf(query_env, "QUERY_STRING=%s", query_string);
 			putenv(query_env);
 		}
-		else
-		{	/* POST */
+		else {	/* POST */
 			//存储CONTENT_LENGTH
 			sprintf(length_env, "CONTENT_LENGTH=%d", content_length);
 			putenv(length_env);
@@ -109,14 +98,12 @@ void execute_cgi(int client, const char *path,
 		execl(path, path, NULL); //执行CGI脚本
 		exit(0);
 	}
-	else
-	{
+	else {
 		close(cgi_output[1]);
 		close(cgi_input[0]);
 		if (strcasecmp(method, "POST") == 0)
 
-			for (i = 0; i < content_length; i++)
-			{
+			for (i = 0; i < content_length; i++) {
 
 				recv(client, &c, 1, 0);
 
@@ -126,7 +113,7 @@ void execute_cgi(int client, const char *path,
 		//读取cgi脚本返回数据
 
 		while (read(cgi_output[0], &c, 1) > 0)
-		//发送给浏览器
+			//发送给浏览器
 		{
 			send(client, &c, 1, 0);
 		}

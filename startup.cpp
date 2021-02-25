@@ -6,11 +6,10 @@
 #include "startup.h"
 #include "error_die.h"
 
-/* 
+/*
  * 初始化httpd服务，包括建立套接字，绑定端口，进行监听
  * */
-int startup(u_short *port)
-{
+int startup(u_short* port) {
 
 	int httpd = 0, option;
 	struct sockaddr_in name;
@@ -22,19 +21,19 @@ int startup(u_short *port)
 	socklen_t optlen;
 	optlen = sizeof(option);
 	option = 1;
-	setsockopt(httpd, SOL_SOCKET, SO_REUSEADDR, (void *)&option, optlen); //设置可以使用TIMEWAIT中的连接
+	setsockopt(httpd, SOL_SOCKET, SO_REUSEADDR, (void*)&option, optlen); //设置可以使用TIMEWAIT中的连接
 
 	memset(&name, 0, sizeof(name));
 	name.sin_family = AF_INET;
 	name.sin_port = htons(*port);
 	name.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if (bind(httpd, (struct sockaddr *)&name, sizeof(name)) < 0) //绑定(命名)socket
+	if (bind(httpd, (struct sockaddr*)&name, sizeof(name)) < 0) //绑定(命名)socket
 		error_die("bind");										 //绑定失败
 	if (*port == 0)												 /*动态分配一个端口 */
 	{
 		socklen_t namelen = sizeof(name);
-		if (getsockname(httpd, (struct sockaddr *)&name, &namelen) == -1)
+		if (getsockname(httpd, (struct sockaddr*)&name, &namelen) == -1)
 			error_die("getsockname");
 		*port = ntohs(name.sin_port);
 	}

@@ -3,12 +3,12 @@
 #include <string.h>
 #include <sys/socket.h>
 
-/* 
+/*
  * 把HTTP响应都头部写到套接字
+ *
  * */
 
-void headers(int client, const char *filename)
-{
+void headers(int client, const char* filename) {
 
 	char buf[1024];
 
@@ -24,13 +24,13 @@ void headers(int client, const char *filename)
 	send(client, buf, strlen(buf), 0);
 }
 
-/**********************************************************************/
-/*  
+
+/*
  * 返回给客户端这是个错误请求，HTTP状态码 400 BAD REQUEST.
+ *
  * */
-/**********************************************************************/
-void bad_request(int client)
-{
+
+void bad_request(int client) {
 	char buf[1024];
 	//发送400
 	sprintf(buf, "HTTP/1.0 400 BAD REQUEST\r\n");
@@ -46,8 +46,7 @@ void bad_request(int client)
 }
 
 
-void unimplemented(int client)
-{
+void unimplemented(int client) {
 	char buf[1024];
 	//发送501说明相应方法没有实现
 	sprintf(buf, "HTTP/1.0 501 Method Not Implemented\r\n");
@@ -68,12 +67,12 @@ void unimplemented(int client)
 	send(client, buf, strlen(buf), 0);
 }
 
-/* 
+/*
  * 主要处理找不到请求到文件时的情况
-*/
+ *
+ * */
 
-void not_found(int client)
-{
+void not_found(int client) {
 	char buf[1024];
 	//返回404
 	sprintf(buf, "HTTP/1.0 404 NOT FOUND\r\n");
@@ -96,12 +95,12 @@ void not_found(int client)
 	send(client, buf, strlen(buf), 0);
 }
 
-/* 
+/*
  * 主要处理发生在执行cgi程序时出现的错误
- * */
+ *
+ */
 
-void cannot_execute(int client)
-{
+void cannot_execute(int client) {
 	char buf[1024];
 	//发送500
 	sprintf(buf, "HTTP/1.0 500 Internal Server Error\r\n");

@@ -12,17 +12,15 @@
 
 
 #define ISspace(x) isspace((int)(x))
-/**********************************************************************/
-/* 
+/*
  * 处理从套接字上监听到到一个HTTP请求，在这里可以很大一部分地体现服务器处理请求流程
- * */
-/**********************************************************************/
+ *
+*/
 //  处理监听到的 HTTP 请求 
-void *accept_request(void* from_client)
-{
+void* accept_request(void* from_client) {
 	//这个函数在子线程中运行
 	//printf("Now in accept_request\n");
-	int client = *(int *)from_client;
+	int client = *(int*)from_client;
 	char buf[1024];
 	int numchars;
 	char method[255];
@@ -31,15 +29,14 @@ void *accept_request(void* from_client)
 	size_t i, j;
 	struct stat st;
 	int cgi = 0;
-	char *query_string = NULL;
+	char* query_string = NULL;
 
 	numchars = get_line(client, buf, sizeof(buf));
 
 	i = 0;
 	j = 0;
 
-	while (!ISspace(buf[j]) && (i < sizeof(method) - 1))
-	{
+	while (!ISspace(buf[j]) && (i < sizeof(method) - 1)) {
 		//提取其中的请求方式
 		method[i] = buf[j];
 		i++;
@@ -47,8 +44,7 @@ void *accept_request(void* from_client)
 	}
 	method[i] = '\0';
 
-	if (strcasecmp(method, "GET") && strcasecmp(method, "POST"))
-	{
+	if (strcasecmp(method, "GET") && strcasecmp(method, "POST")) {
 		unimplemented(client);
 		return NULL;
 	}
@@ -61,8 +57,7 @@ void *accept_request(void* from_client)
 	while (ISspace(buf[j]) && (j < sizeof(buf)))
 		j++;
 
-	while (!ISspace(buf[j]) && (i < sizeof(url) - 1) && (j < sizeof(buf)))
-	{
+	while (!ISspace(buf[j]) && (i < sizeof(url) - 1) && (j < sizeof(buf))) {
 		url[i] = buf[j];
 		i++;
 		j++;
@@ -70,16 +65,14 @@ void *accept_request(void* from_client)
 	url[i] = '\0';
 
 	//GET请求url可能会带有?,有查询参数
-	if (strcasecmp(method, "GET") == 0)
-	{
+	if (strcasecmp(method, "GET") == 0) {
 
 		query_string = url;
 		while ((*query_string != '?') && (*query_string != '\0'))
 			query_string++;
 
 		/* 如果有?表明是动态请求, 开启cgi */
-		if (*query_string == '?')
-		{
+		if (*query_string == '?') {
 			cgi = 1;
 			*query_string = '\0';
 			query_string++;
@@ -88,13 +81,11 @@ void *accept_request(void* from_client)
 
 	sprintf(path, "httpdocs%s", url);
 
-	if (path[strlen(path) - 1] == '/')
-	{
+	if (path[strlen(path) - 1] == '/') {
 		strcat(path, "test.html");
 	}
 
-	if (stat(path, &st) == -1)//没有找到对应文件
-	{
+	if (stat(path, &st) == -1) {//没有找到对应文件
 		while ((numchars > 0) && strcmp("\n", buf))//把client中的剩余缓冲读完，什么都不做
 			numchars = get_line(client, buf, sizeof(buf));
 		not_found(client);
@@ -102,9 +93,7 @@ void *accept_request(void* from_client)
 	else//找到了对应文件
 	{
 
-		if ((st.st_mode & S_IFMT) == S_IFDIR) //S_IFDIR代表目录
-											  //如果请求参数为目录, 自动打开test.html
-		{
+		if ((st.st_mode & S_IFMT) == S_IFDIR) 		{//如果请求参数为目录, 自动打开test.htmlS_IFDIR代表目录
 			strcat(path, "/test.html");
 		}
 
