@@ -2,6 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
+//200 OK
+//400 BAD_REQUEST
+//501 说明相应方法没有实现
+//404 NOT FOUND
+//500 执行CGI程序错误
+
+
 
 /*
  * 把HTTP响应都头部写到套接字

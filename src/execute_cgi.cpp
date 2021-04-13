@@ -18,8 +18,8 @@ void execute_cgi(int client, const char* path,
 	const char* method, const char* query_string) {
 	printf("Now in execute_cgi\n");
 	char buf[1024];
-	int cgi_output[2];
-	int cgi_input[2];
+	int cgi_output[2];	//该管道，cgi的标准输出定向到该管道的cgi_output[1]，cgi从cgi_output[1]写，父进程则从cgi_output[0]读,
+	int cgi_input[2];	//该管道，cgi的标准输入定向到，cgi_input[0],即父进程则从cgi_input[1]写，cgi从cgi_input[0]读
 
 	pid_t pid;
 	int status;
@@ -65,18 +65,18 @@ void execute_cgi(int client, const char* path,
 		return;
 	}
 
-	if ((pid = fork()) < 0) {
+	if ((pid = fork()) < 0) {//fork一个子进程
 		cannot_execute(client);
 		return;
 	}
-	if (pid == 0) /* 子进程: 运行CGI 脚本 */
+	if (pid == 0) /* 子进程: 运行CGI 脚本 */	//子进程中，pid为0
 	{
 		char meth_env[255];
 		char query_env[255];
 		char length_env[255];
 
-		dup2(cgi_output[1], 1);
-		dup2(cgi_input[0], 0);
+		dup2(cgi_output[1], 1);		//把用于CGI输出的管道的输出，重定向到标准输出。即cgi直接从标准输出进行写，然后会定向到cgi_out_put[1]，父进程，则从cgi_output[0]读
+		dup2(cgi_input[0], 0);		//把用于CGI程序输入的管道的输入，重新定向到标准输入。(即，父进程往cgi_input[1]写，cgi_input[0]被定向到标准输入，所以cgi直接从标准输入读取就可以了)
 
 		close(cgi_output[0]); //关闭了cgi_output中的读通道
 		close(cgi_input[1]);  //关闭了cgi_input中的写通道
@@ -98,7 +98,7 @@ void execute_cgi(int client, const char* path,
 		execl(path, path, NULL); //执行CGI脚本
 		exit(0);
 	}
-	else {
+	else {			//父进程中pid是子进程的pid
 		close(cgi_output[1]);
 		close(cgi_input[0]);
 		if (strcasecmp(method, "POST") == 0)
@@ -107,12 +107,12 @@ void execute_cgi(int client, const char* path,
 
 				recv(client, &c, 1, 0);
 
-				write(cgi_input[1], &c, 1);
+				write(cgi_input[1], &c, 1);		//写入到管道cgi_input的输入口1，cgi程序从cgi_input[0]进行读取数据
 			}
 
 		//读取cgi脚本返回数据
 
-		while (read(cgi_output[0], &c, 1) > 0)
+		while (read(cgi_output[0], &c, 1) > 0)//cgi程序往cgi_output[1]写入数据，父进程则直接从cgi_put[0]读数据
 			//发送给浏览器
 		{
 			send(client, &c, 1, 0);

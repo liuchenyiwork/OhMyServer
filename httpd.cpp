@@ -17,7 +17,7 @@ using namespace std;
 
 #define MAX_EVENT_NUMBER 1024
 //#define BUFFER_SIZE 10
-
+static unsigned long long times = 0;
 int main(void) {
 	int listenfd = -1;
 	u_short port = 4396; //默认监听端口号 port 为4396
@@ -41,6 +41,7 @@ int main(void) {
 	while (1) {
 		//code for epoll
 		cout << "----------------" << endl;
+
 		cout << "epoll_wait is ready..." << endl;
 
 		int ret = epoll_wait(epollfd, events, MAX_EVENT_NUMBER, -1);
@@ -54,6 +55,7 @@ int main(void) {
 		for (int i = 0;i < ret;i++) {
 			int eventfd = events[i].data.fd;
 			if (eventfd == listenfd) {//是tcp监听事件
+				cout << "第" << times++ << "次接收连接" << endl;
 				connfd = accept(listenfd, (struct sockaddr*)&client_name, &client_name_len);
 				if (connfd == -1)
 					error_die("accept");
